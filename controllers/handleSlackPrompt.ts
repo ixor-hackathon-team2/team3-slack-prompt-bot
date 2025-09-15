@@ -24,14 +24,21 @@ export const handleSlackPrompt = async (req: Request, res: Response) => {
     }
 
     // Prevent bot loops: ignore events from bots or our own bot user
-    if (event.subtype === "bot_message" || event.bot_id || (process.env.SLACK_BOT_USER_ID && event.user === process.env.SLACK_BOT_USER_ID)) {
+    if (
+      event.subtype === "bot_message" ||
+      event.bot_id ||
+      (process.env.SLACK_BOT_USER_ID &&
+        event.user === process.env.SLACK_BOT_USER_ID)
+    ) {
       return res.status(200).end();
     }
 
     const { channel, prompt } = filterAndBuildObjects(event);
 
     type RunState = { messages: { role: string; content: string }[] };
-    const client = new Client<RunState>({ apiUrl: process.env.LANGCHAIN_API_URL });
+    const client = new Client<RunState>({
+      apiUrl: process.env.LANGCHAIN_API_URL,
+    });
     const assistantId = "agent";
     const thread = await client.threads.create();
 
@@ -43,13 +50,13 @@ export const handleSlackPrompt = async (req: Request, res: Response) => {
       input,
     })) as RunState;
 
-    console.log(runResponse)
+    console.log(runResponse);
 
     await axios.post(
       "https://slack.com/api/chat.postMessage",
       {
         channel,
-        text: runResponse.messages[1].content,
+        text: runResponse.messages[-1].content,
       },
       {
         headers: {
