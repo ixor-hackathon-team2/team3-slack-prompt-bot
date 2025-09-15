@@ -56,7 +56,7 @@ export const handleSlackPrompt = async (req: Request, res: Response) => {
       "https://slack.com/api/chat.postMessage",
       {
         channel,
-        text: runResponse.messages[-1].content,
+        text: runResponse.messages[runResponse.messages.length - 1].content,
       },
       {
         headers: {
